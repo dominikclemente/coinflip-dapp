@@ -1,0 +1,28 @@
+{
+  "name": "coinflip-dapp",
+  "version": "1.0.0",
+  "description": "Coinflip dApp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dominikclemente/coinflip-dapp.git"
+  },
+  "keywords": [
+    "Ethereum",
+    "smart-contracts",
+    "Solidity",
+    "JavaScript"
+  ],
+  "author": "Dominik Clemente",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dominikclemente/coinflip-dapp/issues"
+  },
+  "homepage": "https://github.com/dominikclemente/coinflip-dapp#readme",
+  "dependencies": {
+    "truffle-assertions": "^0.9.2"
+  }
+}
