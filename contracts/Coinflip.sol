@@ -24,7 +24,7 @@ contract Coinflip is Ownable {
         }
 
         else {
-            contractBalance -= message.value;
+            contractBalance -= msg.value;
             msg.sender.transfer(msg.value * 2);
             success = true;
         }
@@ -33,7 +33,19 @@ contract Coinflip is Ownable {
         return success;
     }
 
-    function withdrawAll () public onlyOwner{
+    function withdrawAll () public onlyOwner returns(uint){
+        msg.sender.transfer(address(this).balance);
+        assert(address(this).balance == 0);
+        return address(this).balance;
+    }
 
+    function getBalance() public view returns (address, uint, uint) {
+        return(address(this), address(this).balance, contractBalance);
+    }
+
+    function fundContract() public payable onlyOwner returns(uint){
+        require(msg.value != 0);
+        emit funded(msg.sender, msg.value);
+        return msg.value;
     }
 }
