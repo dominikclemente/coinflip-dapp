@@ -5154,9 +5154,63 @@
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "5777": {
+      "events": {
+        "0x20d932006281d267f137cd3921b707c2097e1f041b1291181cc3d0e86f449ebb": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "bet",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "name": "bet",
+          "type": "event",
+          "signature": "0x20d932006281d267f137cd3921b707c2097e1f041b1291181cc3d0e86f449ebb"
+        },
+        "0xed7d0ddcc17abdb3935a0a23cd93e91b449dfeac7fd0def9f481ed5b37e18c4d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "funding",
+              "type": "uint256"
+            }
+          ],
+          "name": "funded",
+          "type": "event",
+          "signature": "0xed7d0ddcc17abdb3935a0a23cd93e91b449dfeac7fd0def9f481ed5b37e18c4d"
+        }
+      },
+      "links": {},
+      "address": "0xFDBbE87bbbe1Cd0960A952Ec25d3B8433Fc1FF66",
+      "transactionHash": "0xc683496709e59c52663473209fa7269268c42da055653f58c84eed0e9ad90017"
+    }
+  },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-03-08T19:18:17.020Z",
+  "updatedAt": "2020-03-08T20:51:21.046Z",
   "devdoc": {
     "methods": {}
   },

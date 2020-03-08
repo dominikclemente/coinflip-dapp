@@ -1,30 +1,31 @@
 const coinflipContract = artifacts.require("Coinflip");
 const truffleAssert = require("truffle-assertions");
 
-contract("Coinflip", async function(accounts){
+contract("Coinflip", async accounts => {
     let instance;
 
-    before(async function(){
+    before(async () => {
         instance = await coinflipContract.deployed();
     });
 
-    it("shouldn't be able to bet an amount smaller than 0.01 ether", async function(){
+    it("shouldn't be able to bet an amount smaller than 0.01 ether", async () => {
         await truffleAssert.fails(instance.flip({value: web3.utils.toWei("0.003", "ether"), from: accounts[1]}), truffleAssert.ErrorType.REVERT);
     });
 
-    it("should be able to bet an amount higher than 0.01 ether", async function(){
+    it("should be able to bet an amount higher than 0.01 ether", async () => {
         await truffleAssert.passes(instance.flip({value: web3.utils.toWei("0.01", "ether"), from: accounts[1]}), truffleAssert.ErrorType.REVERT);
     });
-// We get the current balance of the contract add one to it and try to withdraw that amount expecting an error
-    it("shouldn't be able to bet an amount higher than the total balance of the contract", async function(){
-        await truffleAssert.fails(instance.flip({value: instance.getBalance()[2] + web3.utils.toWei("1", "ether"), from: accounts[1]}), truffleAssert.ErrorType.REVERT);
+
+    // TODO: We get the current balance of the contract add one to it and try to withdraw that amount expecting an error
+    it("shouldn't be possible make higher bad as contract funding", async function(){
+        await truffleAssert.fails(instance.flip({value: web3.utils.toWei("9","ether"), from:accounts[1]}), truffleAssert.ErrorType.REVERT);
     });
 
-    it("shouldn't be able to withdraw the funds of the contract from a non-owner address", async function(){
-        await truffleAssert.fails(instance.witdrawAll({from: accounts[1]}), truffleAssert.ErrorType.REVERT);
+    it("shouldn't be able to withdraw the funds of the contract from a non-owner address", async () =>{
+        await truffleAssert.fails(instance.withdrawAll({from: accounts[1]}), truffleAssert.ErrorType.REVERT);
     });
 
-    it("should be possible to withdraw funds from contract owner address", async function(){
-        await truffleAssert.passes(instance.witdrawAll({from: accounts[0]}), truffleAssert.ErrorType.REVERT);
+    it("should be possible to withdraw funds from contract owner address", async () => {
+        await truffleAssert.passes(instance.withdrawAll({from: accounts[0]}), truffleAssert.ErrorType.REVERT);
     });
 });
