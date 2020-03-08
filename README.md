@@ -3,5 +3,5 @@ A coinflip dapp project (Assignment from Ivan on Tech Academy - Ethereum smart c
 
 ### Application UI
 I modified a Bootstrap pre-built theme to create a simple UI.
-![Coinflip dApp look](./img/coinflip_app_look.png)
+![Coinflip dApp look](./img/coinflip_dapp_look.png)
 
