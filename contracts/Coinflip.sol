@@ -9,12 +9,12 @@ contract Coinflip is Ownable {
 
     event funded(address owner, uint funding);
 
-    modifier costs(uint cost) {
-        require(msg.value >= cost && msg.value >= 0.01 ether, "The minimum bet is 0.01 Ether");
-        _; 
+    modifier minimumBet(uint cost){
+        require(msg.value >= cost, "The minimum bet is 0.01 Ether");
+        _;
     }
     
-    function flip() public payable costs(0.01 ether) returns(bool){
+    function flip() public payable minimumBet(0.01 ether) returns(bool){
         require(address(this).balance >= msg.value, "The contract doesn't have enough funds");
         bool success;
 
