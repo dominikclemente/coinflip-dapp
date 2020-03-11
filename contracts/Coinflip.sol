@@ -5,7 +5,7 @@ pragma solidity 0.5.12;
 contract Coinflip is Ownable {
     uint public contractBalance;
 
-    event bet(address user, uint bet, bool);
+    event bet(address user, uint bet, bool succes);
 
     event funded(address owner, uint funding);
 
@@ -30,7 +30,7 @@ contract Coinflip is Ownable {
         }
 
         emit bet(msg.sender, msg.value, success);
-        return success;
+        return false;
     }
 
     function withdrawAll () public onlyOwner returns(uint){
