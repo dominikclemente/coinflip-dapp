@@ -5,7 +5,7 @@ pragma solidity 0.5.12;
 contract Coinflip is Ownable {
     uint public contractBalance;
 
-    event bet(address user, uint bet, bool succes);
+    event bet(address user, uint bet, bool success);
 
     event funded(address owner, uint funding);
 
