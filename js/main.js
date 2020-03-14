@@ -11,6 +11,7 @@ $(document).ready(function(){
 
 async function bet(){
     var betAmount = $("#name_input").val();
+    var betPrize = Number(betAmount)*2;
 
     var config = {
         value: web3.utils.toWei(betAmount.toString(), "ether"),
@@ -24,7 +25,13 @@ async function bet(){
             async (err, events) => {
                 console.log(events[0].returnValues);
                 betResult = events[0].returnValues['success'];
-                console.log(betResult);
+                if (betResult) {
+                    $("#bet_result").text("You won " + betPrize.toString() + " ETH!");
+                }
+                else {
+                    $("#bet_result").text("You lost " + betAmount.toString() + " ETH");
+                }
+                
             });            
         }catch(err){
         console.log(err)
