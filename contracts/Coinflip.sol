@@ -40,25 +40,24 @@ contract Coinflip is Ownable, usingProvable {
     function __callback(bytes32 _queryId, string memory _result, bytes memory _proof) public {
         require(msg.sender == provable_cbAddress());
 
-        uint256 randomNumber = uint256(keccak256(abi.encodePacked(_result)))
-        latestNumber = randomNumber % 2
+        uint256 randomNumber = uint256(keccak256(abi.encodePacked(_result)));
+        latestNumber = randomNumber % 2;
 
         if (latestNumber) {
             results[_queryId].result = true;
         }
         else {
             results[_queryId].result = false;
-            results[_queryId].player.transfer((results[_queryId].value)*2)
+            results[_queryId].player.transfer((results[_queryId].value)*2);
         }
 
         //Player address is not on waiting any more and can play again
         waiting[results[_queryId].player] = false;
         emit generatedRandomNumber(randomNumber);
         emit betTaken(betting[_queryId].player, _queryId, betting[_queryId].value, betting[_queryId].result);
-       }
     }
 
-    function update() payable public returns (bytes32) {
+    function update() public payable returns (bytes32) {
 
         uint256 QUERY_EXECUTION_DELAY = 0;
         uint256 GAS_FOR_CALLBACK = 200000;
@@ -66,7 +65,7 @@ contract Coinflip is Ownable, usingProvable {
 
         emit LogNewProvableQuery("Query is on the way, waiting for response");
 
-        return id
+        return id;
     } 
 
     function flip() public payable minimumBet(0.01 ether) returns(bool){
@@ -87,11 +86,11 @@ contract Coinflip is Ownable, usingProvable {
                 success = true;
                 results[queryId] = Bet({player: msg.sender, value: msg.value, result: true});
                 contractBalance -= 2*msg.value;
-                msg.sender.transfer(2*msg.value)
+                msg.sender.transfer(2*msg.value);
             }
             else{
                 success = false;
-                results[queryID] = Bet({player: msg.sender, value: msg.value, result: false})
+                results[queryID] = Bet({player: msg.sender, value: msg.value, result: false});
             }
 
             waiting[msg.sender] = false;
