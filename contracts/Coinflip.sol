@@ -43,7 +43,7 @@ contract Coinflip is Ownable, usingProvable {
         uint256 randomNumber = uint256(keccak256(abi.encodePacked(_result)));
         latestNumber = randomNumber % 2;
 
-        if (latestNumber) {
+        if (latestNumber == 1) {
             results[_queryId].result = true;
         }
         else {
@@ -53,15 +53,15 @@ contract Coinflip is Ownable, usingProvable {
 
         //Player address is not on waiting any more and can play again
         waiting[results[_queryId].player] = false;
-        emit generatedRandomNumber(randomNumber);
-        emit betTaken(betting[_queryId].player, _queryId, betting[_queryId].value, betting[_queryId].result);
+        emit randomNumberGenerated(randomNumber);
+        emit betTaken(results[_queryId].player, _queryId, results[_queryId].value, results[_queryId].result);
     }
 
     function update() public payable returns (bytes32) {
 
         uint256 QUERY_EXECUTION_DELAY = 0;
         uint256 GAS_FOR_CALLBACK = 200000;
-        id = provable_newRandomDSQuery(QUERY_EXECUTION_DELAY, NUM_RANDOM_BYTES_REQUESTED, GAS_FOR_CALLBACK);
+        bytes32 id = provable_newRandomDSQuery(QUERY_EXECUTION_DELAY, NUM_RANDOM_BYTES_REQUESTED, GAS_FOR_CALLBACK);
 
         emit LogNewProvableQuery("Query is on the way, waiting for response");
 
@@ -77,7 +77,7 @@ contract Coinflip is Ownable, usingProvable {
             contractBalance += msg.value;
 
             waiting[msg.sender] = true;
-            queryID = update();
+            queryId = update();
 
             uint result = latestNumber;
             emit bet(msg.sender, msg.value, success);
@@ -90,7 +90,7 @@ contract Coinflip is Ownable, usingProvable {
             }
             else{
                 success = false;
-                results[queryID] = Bet({player: msg.sender, value: msg.value, result: false});
+                results[queryId] = Bet({player: msg.sender, value: msg.value, result: false});
             }
 
             waiting[msg.sender] = false;
