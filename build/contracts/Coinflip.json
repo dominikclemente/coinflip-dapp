@@ -4995,6 +4995,59 @@
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
+    "3": {
+      "events": {
+        "0x20d932006281d267f137cd3921b707c2097e1f041b1291181cc3d0e86f449ebb": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "bet",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "success",
+              "type": "bool"
+            }
+          ],
+          "name": "bet",
+          "type": "event",
+          "signature": "0x20d932006281d267f137cd3921b707c2097e1f041b1291181cc3d0e86f449ebb"
+        },
+        "0xed7d0ddcc17abdb3935a0a23cd93e91b449dfeac7fd0def9f481ed5b37e18c4d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "funding",
+              "type": "uint256"
+            }
+          ],
+          "name": "funded",
+          "type": "event",
+          "signature": "0xed7d0ddcc17abdb3935a0a23cd93e91b449dfeac7fd0def9f481ed5b37e18c4d"
+        }
+      },
+      "links": {},
+      "address": "0xCd454b6CaeE9d805916De50F4A38189c9858d819",
+      "transactionHash": "0xc22f2a1a8e57ad8b374a98da82467322cc74b803ff9f891a6ba7bf9b5700efcd"
+    },
     "5777": {
       "events": {
         "0x20d932006281d267f137cd3921b707c2097e1f041b1291181cc3d0e86f449ebb": {
@@ -5209,7 +5262,7 @@
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-03-14T20:49:25.668Z",
+  "updatedAt": "2020-03-25T13:41:13.320Z",
   "devdoc": {
     "methods": {}
   },
