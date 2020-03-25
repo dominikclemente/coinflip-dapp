@@ -11,33 +11,36 @@ $(document).ready(function(){
 
 async function bet(){
     var betAmount = $("#name_input").val();
-    var betPrize = Number(betAmount)*2;
+
+    $("#bet_result").text("Confirm transaction through MetaMask");
 
     var config = {
         value: web3.utils.toWei(betAmount.toString(), "ether"),
-        gas: 100000
+        gas: 200000
     }
 
     try {
-    let res = await contractInstance.methods.flip().send(config);
-        try{
-            await contractInstance.getPastEvents(['bet'], {fromBlock: 'latest', toBlock: 'latest'},
-            async (err, events) => {
-                console.log(events[0].returnValues);
-                betResult = events[0].returnValues['success'];
-                if (betResult) {
-                    $("#bet_result").text("You won " + betPrize.toString() + " ETH!");
-                }
-                else {
-                    $("#bet_result").text("You lost " + betAmount.toString() + " ETH");
-                }
-                
-            });            
+        $("#bet_result").text("Waiting for the transaction to go through");
+        let res = await contractInstance.methods.flip().send(config);
+            try{
+                $("#bet_result").text("Waiting to get result from our wise oracle...");
+                await contractInstance.getPastEvents(['betTaken'], {fromBlock: 7590043, toBlock: 'latest'},
+                async (err, events) => {
+                    console.log(events);
+                    /*
+                    betResult = events[0].returnValues['result'];
+                    if (betResult) {
+                        $("#bet_result").text("You won " + betPrize.toString() + " ETH!");
+                    }
+                    else {
+                        $("#bet_result").text("You lost " + betPrize.toString() + " ETH");
+                    }
+                    */
+                });            
+            }catch(err){
+            console.log(err)
+            }
         }catch(err){
-        console.log(err)
+            console.log(err)
         }
-    }catch(err){
-        console.log(err)
-    }
-
 }
