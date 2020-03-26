@@ -4,120 +4,119 @@ import "./provableAPI.sol";
 pragma solidity 0.5.12;
 
 contract Coinflip is Ownable, usingProvable {
+    uint256 public unlockedBalance;
 
-    uint256 constant NUM_RANDOM_BYTES_REQUESTED = 1; // Enough memory to store a number in the 0-255 range
-    bytes32 queryId;                                 // Callback ID 
-    uint256 public latestNumber;                     // 0 or 1
+    mapping(address => uint256) public playersCollectablePrizes;
+    mapping(bytes32 => address) public QueryIdPlayer;
+    mapping(address => bytes32) public PlayerQueryId;
+    mapping(address => uint256) public playersLastBet;
+    mapping(address => uint256) public playersLastPlay;
+    mapping(address => bool) public isPlayerWaiting;
+    mapping(address => uint256) public playersPotentialWinnings;
 
-    struct Bet {
-        address payable player; 
-        uint value;                 // How much the player is betting
-        bool result;                // Result of the bet (0 or 1)
+    uint256 constant NUM_RANDOM_BYTES_REQUESTED = 1;
+
+    event userWon(bytes32 queryId, address player, uint256 prize, bool won);
+
+    // Provable Events
+    event logNewProvableQuery(string description);
+    event generatedRandomNumber(uint256 randomNumber);
+    event logQueryId(address player, bytes32 queryId);
+
+    constructor () public {
+        getRandomFromOracle();
     }
 
-    mapping (bytes32 => Bet) public results;
-    mapping (address => bool) public waiting;
-
-    constructor() public {
-        provable_setProof(proofType_Ledger);
-        update();
-    }
-
-    uint public contractBalance;
-
-    event bet(address user, uint bet, bool success);
-    event betTaken(address indexed player, bytes32 Id, uint value, bool result);
-    event betPlaced(address indexed player,bytes32 queryId, uint value);
-    event funded(address owner, uint funding);
-    event randomNumberGenerated(uint256 randomNumber);
-    event LogNewProvableQuery(string description);
-
-    modifier minimumBet(uint cost){
-        require(msg.value >= cost, "The value provided is not enough");
+    modifier minimumBet(uint256 betValue) {
+        require(betValue >= 1 wei, "minimum play is 1 wei");
         _;
     }
 
-    function __callback(bytes32 _queryId, string memory _result, bytes memory _proof) public {
+    function __callback(
+        bytes32 _queryId,
+        string memory _result,
+        bytes memory _proof
+    ) public {
         require(msg.sender == provable_cbAddress());
 
-        uint256 randomNumber = uint256(keccak256(abi.encodePacked(_result)));
-        latestNumber = randomNumber % 2;
-
-        if (latestNumber == 1) {
-            results[_queryId].result = true;
-        }
-        else {
-            results[_queryId].result = false;
-            results[_queryId].player.transfer((results[_queryId].value)*2);
-        }
-
-        //Player address is not on waiting any more and can play again
-        waiting[results[_queryId].player] = false;
-        emit randomNumberGenerated(randomNumber);
-        emit betTaken(results[_queryId].player, _queryId, results[_queryId].value, results[_queryId].result);
+        uint256 randomNumber = uint256(keccak256(abi.encodePacked(_result))) %
+            2;
+        emit generatedRandomNumber(randomNumber);
+        processResult(randomNumber, _queryId);
     }
 
-    function update() public payable returns (bytes32) {
+    function processResult(uint256 randomNumber, bytes32 queryId) internal {
+        address playerAddress = QueryIdPlayer[queryId];
+        require(isPlayerWaiting[playerAddress], "user was not waiting for a result...");
+        uint256 userPrize = playersPotentialWinnings[playerAddress];
+        if (randomNumber == playersLastPlay[playerAddress]) {
+            // user wins
+            playersCollectablePrizes[playerAddress] += userPrize;
+            playersPotentialWinnings[playerAddress] = 0;
+            // didPlayerWon[playerAddress] = true;
+            emit userWon(queryId, playerAddress, userPrize, true);
+        } else {
+            playersPotentialWinnings[playerAddress] = 0;
+            unlockedBalance += userPrize;
+            // didPlayerWon[playerAddress] = false;
+            emit userWon(queryId, playerAddress, userPrize, false);
+        }
+        isPlayerWaiting[playerAddress] = false;
+    }
 
+    function getRandomFromOracle() public payable returns (bytes32 queryId) {
         uint256 QUERY_EXECUTION_DELAY = 0;
         uint256 GAS_FOR_CALLBACK = 200000;
-        bytes32 id = provable_newRandomDSQuery(QUERY_EXECUTION_DELAY, NUM_RANDOM_BYTES_REQUESTED, GAS_FOR_CALLBACK);
+        queryId = provable_newRandomDSQuery(
+            QUERY_EXECUTION_DELAY,
+            NUM_RANDOM_BYTES_REQUESTED,
+            GAS_FOR_CALLBACK
+        );
 
-        emit LogNewProvableQuery("Query is on the way, waiting for response");
+        emit logNewProvableQuery(
+            "Provable query sent; waiting for callback..."
+        );
+        emit logQueryId(msg.sender, queryId);
+        return queryId;
+    }
 
-        return id;
-    } 
+      function getCollectablePrizes() public returns (uint256 balance) {
+        return playersCollectablePrizes[msg.sender];
+    }
 
-    function flip() public payable minimumBet(0.01 ether) returns(bool){
-        require(address(this).balance >= msg.value, "The contract doesn't have enough funds");
+    function collectPrizes() public returns (uint256 collected) {
+        uint256 toTransfer = playersCollectablePrizes[msg.sender];
+        playersCollectablePrizes[msg.sender] = 0;
+        msg.sender.transfer(toTransfer);
+        return toTransfer;
+    }
 
-        bool success;
+    function getLatestQueryId()
+        public
+        returns (bytes32 queryID)
+    {
+        return PlayerQueryId[msg.sender];
+    }
 
-        if(!waiting[msg.sender]){
-            contractBalance += msg.value;
+    function play(uint256 userPlay)
+        public
+        payable
+        minimumBet(msg.value)
+        returns (bytes32 queryID)
+    {
 
-            waiting[msg.sender] = true;
-            queryId = update();
-
-            uint result = latestNumber;
-            emit bet(msg.sender, msg.value, success);
-
-            if (result == 1){
-                success = true;
-                results[queryId] = Bet({player: msg.sender, value: msg.value, result: true});
-                contractBalance -= 2*msg.value;
-                msg.sender.transfer(2*msg.value);
-            }
-            else{
-                success = false;
-                results[queryId] = Bet({player: msg.sender, value: msg.value, result: false});
-            }
-
-            waiting[msg.sender] = false;
-            return success;            
+        if (userPlay != 0 && userPlay != 1) {
+            revert("Please chose 1 or 0 as input");
+        } else {
+            playersLastBet[msg.sender] = msg.value;
+            playersPotentialWinnings[msg.sender] = unlockedBalance;
+            unlockedBalance = msg.value; // pool is never 0...all bets always goes to pool, even if user wins.
+            isPlayerWaiting[msg.sender] = true;
+            playersLastPlay[msg.sender] = userPlay;
+            queryID = getRandomFromOracle();
+            QueryIdPlayer[queryID] = msg.sender;
+            PlayerQueryId[msg.sender] = queryID;
+            return queryID;
         }
-        else{
-            return false;
-        }
-
-        emit bet(msg.sender, msg.value, success);
-        emit betPlaced(msg.sender, queryId, msg.value);
-        return false;
-    }
-
-    function withdrawAll () public onlyOwner returns(uint){
-        msg.sender.transfer(address(this).balance);
-        assert(address(this).balance == 0);
-        return address(this).balance;
-    }
-
-    function getBalance() public view returns (address, uint, uint) {
-        return(address(this), address(this).balance, contractBalance);
-    }
-
-    function fundContract() public payable onlyOwner returns(uint){
-        require(msg.value != 0);
-        emit funded(msg.sender, msg.value);
-        return msg.value;
     }
 }

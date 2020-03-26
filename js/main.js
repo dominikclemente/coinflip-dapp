@@ -7,6 +7,12 @@ $(document).ready(function(){
         console.log(contractInstance);
     });
     $('#bet_button').click(bet);
+
+
+    $('#name_input').keypress(function(e){
+        if(e.keyCode==13)
+        $('#bet_button').click();
+    });
 });
 
 async function bet(){
@@ -19,28 +25,39 @@ async function bet(){
         gas: 200000
     }
 
-    try {
-        $("#bet_result").text("Waiting for the transaction to go through");
-        let res = await contractInstance.methods.flip().send(config);
-            try{
-                $("#bet_result").text("Waiting to get result from our wise oracle...");
-                await contractInstance.getPastEvents(['betTaken'], {fromBlock: 7590043, toBlock: 'latest'},
-                async (err, events) => {
-                    console.log(events);
-                    /*
-                    betResult = events[0].returnValues['result'];
-                    if (betResult) {
-                        $("#bet_result").text("You won " + betPrize.toString() + " ETH!");
-                    }
-                    else {
-                        $("#bet_result").text("You lost " + betPrize.toString() + " ETH");
-                    }
-                    */
-                });            
-            }catch(err){
-            console.log(err)
+    contractInstance.methods.flip().send(config)
+    .on('transactionHash', function (hash) {
+        console.log("tx hash", hash);
+        $("#bet_result").text("Waiting for the transaction to be processed");
+    })
+    .on('confirmation', function (confirmationNumber, receipt) {
+        $("#bet_result").text("Transaction Confirmed");
+        console.log("conf", confirmationNumber);
+    })
+    .on('receipt', function (receipt) {
+        console.log(receipt);
+        setTimeout(
+            function() 
+            {
+                $("#bet_result").text("Waiting to get result from oracle....");
+            }, 3000);
+
+        contractInstance.once('userWon', {
+            filter: {
+                queryId: queryId
+            },
+            fromBlock: 0,
+            toBlock: 'latest'
+        }, function (error, event) {
+            console.log("userWon event", event)
+            console.log("test event.returnValues.queryId:", event.returnValues.queryId)
+
+            if (event.returnValues.won) {
+                $("#bet_result").text("You won " + betPrize.toString() + " ETH!");
             }
-        }catch(err){
-            console.log(err)
-        }
+            else {
+                $("#bet_result").text("You lost " + betPrize.toString() + " ETH");
+            }
+        });
+    })
 }
