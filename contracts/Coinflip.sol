@@ -16,7 +16,7 @@ contract Coinflip is Ownable, usingProvable {
 
     uint256 constant NUM_RANDOM_BYTES_REQUESTED = 1;
 
-    event userWon(bytes32 queryId, address player, uint256 prize, bool won);
+    event userWon(bytes32 indexed queryId, address player, uint256 prize, bool won);
 
     // Provable Events
     event logNewProvableQuery(string description);

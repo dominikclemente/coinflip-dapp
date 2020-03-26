@@ -3,7 +3,7 @@ var contractInstance;
 
 $(document).ready(function(){
     window.ethereum.enable().then(function (accounts){
-        contractInstance = new web3.eth.Contract(abi, '0xA0d045A0F6c0b2bF7B53381A2e3d17E2E16Af92B', {from: accounts[0]});
+        contractInstance = new web3.eth.Contract(abi, '0xc1a0F571c1606666AD99287dDb7D2D8E5d0be745', {from: accounts[0]});
         console.log(contractInstance);
     });
     $('#bet_button').click(bet);
@@ -25,7 +25,10 @@ async function bet(){
         gas: 200000
     }
 
-    contractInstance.methods.flip().send(config)
+    // We're always betting for heads
+    var play = 1;
+
+    contractInstance.methods.play(play).send(config)
     .on('transactionHash', function (hash) {
         console.log("tx hash", hash);
         $("#bet_result").text("Waiting for the transaction to be processed");
@@ -40,7 +43,7 @@ async function bet(){
             function() 
             {
                 $("#bet_result").text("Waiting to get result from oracle....");
-            }, 3000);
+            }, 5000);
 
         contractInstance.once('userWon', {
             filter: {
